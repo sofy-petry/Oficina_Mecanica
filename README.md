@@ -381,9 +381,9 @@ específica de cada computador, por isso **não vai para o GitHub**: cada pessoa
 │   ├── excecoes.py       ErroNegocio / ErroBanco
 │   └── __init__.py       create_app() e montagem dos objetos (injeção de dependência)
 ├── database/             01_esquema.sql, 02_gatilhos.sql, 03_dados_exemplo.sql
-├── docs/                 DER (PDF) e modelo relacional (.txt)
-├── .env.example          modelo das variáveis de conexão (sem senha real)
-├── .gitignore
+├── Modelo Lógico.txt
+├── Modelo Conceitual.pdf             
+├── .env                  modelo das variáveis de conexão (sem senha real)
 ├── requirements.txt
 ├── run.py                ponto de entrada
 └── README.md
