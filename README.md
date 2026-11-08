@@ -333,7 +333,7 @@ Funcionamento: o navegador pede uma URL → a **rota** (`rotas.py`) chama o *ser
 4. Abra cada arquivo da pasta `database/` e execute com ▶, **nesta ordem**:
    1. `01_esquema.sql` – cria as tabelas (apaga e recria se já existirem);
    2. `02_gatilhos.sql` – cria as funções e gatilhos;
-   3. `03_dados_exemplo.sql` – dados de demonstração (opcional).
+   3. `03_dados_exemplo.sql` – dados de demonstração.
 5. Atualize (*Refresh*) *Schemas > public > Tables*: as tabelas devem aparecer.
 
 > O projeto **não cria** o banco nem as tabelas: ele só se conecta a um banco que já existe.
