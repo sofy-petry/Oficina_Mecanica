@@ -51,8 +51,6 @@ Pagamento, Parcela, Peça, Fornecedor, Pedido de Peça e Movimentação de Estoq
   quantidade, valor cobrado e se está em garantia.
 - **Fornecimento (N:M):** cada fornecedor vende várias peças, com **preço praticado** e **prazo de entrega** próprios.
 
-> 📎 O diagrama está em [`docs/`](docs/).
-
 ---
 
 ## 🗄️ Parte 2 – Modelo relacional e esquema SQL
