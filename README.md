@@ -202,10 +202,6 @@ DB_USER=postgres
 DB_PASSWORD=sua_senha_aqui
 ```
 
-O `.env` **não vai para o GitHub** (está no `.gitignore`). O repositório traz só o modelo `.env.example`, que cada pessoa
-copia para `.env` e preenche com os dados do seu servidor (os mesmos que aparecem no pgAdmin em
-*Properties > Connection*). Os valores precisam ser iguais aos do pgAdmin, inclusive o **nome do banco** e a **porta**.
-
 ### 3. `config.py` lê o `.env`
 
 O arquivo `app/config.py` lê o `.env` e monta a classe `Config`. A ordem de prioridade é:
