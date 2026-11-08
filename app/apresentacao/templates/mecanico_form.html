@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, campo, selecao %}
+{% block titulo %}Novo mecânico{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Novo mecânico', 'Cadastro da equipe técnica', voltar=url_for('oficina.mecanicos')) %}{% endcall %}
+<form class="card" method="post">
+  <div class="card-head"><h2>{{ icon('mecanico') }} Dados do mecânico</h2></div>
+  <div class="card-corpo">
+    <div class="campos">
+      {{ campo('nome', 'Nome', form, obrigatorio=true, largo=true) }}
+      {{ campo('cpf', 'CPF', form, obrigatorio=true, mask='cpf', placeholder='000.000.000-00') }}
+      {{ campo('dta_admissao', 'Data de admissão', form, tipo='date', obrigatorio=true) }}
+      {{ selecao('especialidade', 'Especialidade', especialidades_opcoes, form, obrigatorio=true) }}
+      {{ campo('percentual_comissao', 'Comissão sobre serviços (%)', form, tipo='number', extra='min="0" max="100" step="0.01"', ajuda='Aplicada sobre a mão de obra executada em OS concluídas.') }}
+    </div>
+  </div>
+  <div class="form-acoes">
+    <button class="btn" type="submit">{{ icon('ok') }} Salvar mecânico</button>
+    <a class="btn btn-ghost" href="{{ url_for('oficina.mecanicos') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

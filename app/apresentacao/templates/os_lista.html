@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, barra_busca, badge, placa, vazio %}
+{% block titulo %}Ordens de serviço{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Ordens de serviço') %}
+  <a class="btn" href="{{ url_for('oficina.os_nova') }}">{{ icon('mais') }} Abrir OS</a>
+{% endcall %}
+<div class="card">
+  {% call barra_busca('Nº da OS, placa ou cliente', busca) %}
+    <select name="status" data-autosubmit aria-label="Status">
+      <option value="">Todos os status</option>
+      {% for s in status_validos %}<option value="{{ s }}" {{ 'selected' if s == status }}>{{ s|capitalize }}</option>{% endfor %}
+    </select>
+  {% endcall %}
+  {% if ordens %}
+  <div class="tabela-wrap"><table class="tabela">
+    <thead><tr><th>OS</th><th>Entrada</th><th>Veículo</th><th>Cliente</th><th>Status</th><th class="num">Total</th></tr></thead>
+    <tbody>
+    {% for o in ordens %}
+      <tr>
+        <td><a class="forte" href="{{ url_for('oficina.os_detalhe', id_os=o.id_ordem_servico) }}">{{ o.numero_sequencial }}</a></td>
+        <td>{{ o.dta_entrada|data_br }}</td>
+        <td>{{ placa(o.placa) }}</td>
+        <td>{{ o.nome_cliente }}</td>
+        <td>{{ badge(o.status) }}</td>
+        <td class="num">{{ o.valor_total|moeda }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}{{ vazio('Nenhuma ordem de serviço encontrada.', 'os') }}{% endif %}
+</div>
+{% endblock %}

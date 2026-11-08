@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, badge, vazio %}
+{% block titulo %}{{ d.pedido.codigo_pedido }}{% endblock %}
+{% block conteudo %}
+{% set p = d.pedido %}
+{% call cabecalho(p.codigo_pedido, p.razao_social ~ ' · feito em ' ~ (p.data_pedido|data_br), voltar=url_for('oficina.pedidos')) %}
+  {{ badge(p.status) }}
+{% endcall %}
+
+<div class="grid-os">
+  <section class="card">
+    <div class="card-head"><h2>Itens do pedido</h2><span class="tag">{{ d.itens|length }}</span></div>
+    <div class="tabela-wrap"><table class="tabela">
+      <thead><tr><th>Peça</th><th class="num">Qtd</th><th class="num">Valor unit.</th><th class="num">Total</th></tr></thead>
+      <tbody>
+      {% for i in d.itens %}
+        <tr><td><a class="forte" href="{{ url_for('oficina.peca_detalhe', id_peca=i.id_peca) }}">{{ i.descricao }}</a><span class="sec">{{ i.codigo }}</span></td>
+            <td class="num">{{ i.quantidade }}</td><td class="num">{{ i.valor_unitario|moeda }}</td><td class="num forte">{{ i.valor_total|moeda }}</td></tr>
+      {% endfor %}
+      </tbody>
+      <tfoot><tr><td colspan="3" class="num forte" style="text-align:right">Total</td><td class="num total-grande" style="font-size:18px">{{ p.valor_total|moeda }}</td></tr></tfoot>
+    </table></div>
+  </section>
+
+  <div>
+    {% if d.proximos %}
+    <section class="card">
+      <div class="card-head"><h2>Atualizar pedido</h2></div>
+      <div class="card-corpo" style="display:grid;gap:10px">
+        {% for novo in d.proximos %}
+          <form method="post" action="{{ url_for('oficina.pedido_status', id_pedido=p.id_pedido_peca) }}"
+                {% if novo == 'entregue' %}data-confirm="Confirmar o recebimento? As peças darão entrada no estoque e isso não pode ser desfeito."{% elif novo == 'cancelado' %}data-confirm="Cancelar este pedido?"{% endif %}>
+            <input type="hidden" name="status" value="{{ novo }}">
+            <button class="btn btn-bloco {{ 'btn-perigo' if novo == 'cancelado' else ('btn-ghost' if novo == 'em trânsito' else '') }}" type="submit">
+              {{ {'em trânsito': 'Marcar como em trânsito', 'entregue': 'Confirmar recebimento', 'cancelado': 'Cancelar pedido'}[novo] }}
+            </button>
+          </form>
+        {% endfor %}
+        <div class="ajuda">Ao confirmar o recebimento, o sistema dá entrada de todos os itens no estoque e registra as movimentações.</div>
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="card">
+      <div class="card-head"><h2>Resumo</h2></div>
+      <div class="card-corpo">
+        <dl class="dl">
+          <dt>Fornecedor</dt><dd><a href="{{ url_for('oficina.fornecedor_detalhe', id_fornecedor=p.id_fornecedor) }}">{{ p.razao_social }}</a></dd>
+          <dt>Data do pedido</dt><dd>{{ p.data_pedido|data_br }}</dd>
+          <dt>Previsão</dt><dd>{{ p.previsao_entrega|data_br }}</dd>
+          <dt>Ordem de serviço</dt><dd>{% if p.id_ordem_servico %}<a href="{{ url_for('oficina.os_detalhe', id_os=p.id_ordem_servico) }}">{{ p.numero_os }}</a>{% else %}estoque geral{% endif %}</dd>
+        </dl>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

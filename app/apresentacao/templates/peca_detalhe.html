@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho %}
+{% block titulo %}{{ d.peca.descricao }}{% endblock %}
+{% block conteudo %}
+{% set p = d.peca %}
+{% call cabecalho(p.descricao, p.codigo, voltar=url_for('oficina.pecas')) %}{% endcall %}
+<section class="card">
+  <div class="card-head"><h2>Dados da peça</h2>{% if p.estoque_baixo %}<span class="badge st-estoque-baixo">Estoque baixo</span>{% endif %}</div>
+  <div class="card-corpo">
+    <dl class="dl">
+      <dt>Fabricante</dt><dd>{{ p.fabricante }}</dd>
+      <dt>Em estoque</dt><dd>{{ p.qtd_estoque }} (mínimo {{ p.qtd_minimo }})</dd>
+      <dt>Preço de custo</dt><dd>{{ p.preco_custo|moeda }}</dd>
+      <dt>Preço de venda</dt><dd>{{ p.preco_venda|moeda }}</dd>
+      <dt>Garantia</dt><dd>{{ p.periodo_garantia or 0 }} dias</dd>
+      <dt>Compatível com</dt><dd>{{ (p.marcas|join(', ') ~ ' ' ~ p.modelos|join(', '))|trim or 'qualquer veículo' }}</dd>
+    </dl>
+  </div>
+</section>
+{% endblock %}

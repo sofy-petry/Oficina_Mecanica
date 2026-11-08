@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, placa, badge, vazio %}
+{% block titulo %}{{ v.placa }}{% endblock %}
+{% block conteudo %}
+{% call cabecalho(v.marca ~ ' ' ~ v.modelo, v.placa, voltar=url_for('oficina.veiculos')) %}
+  <a class="btn" href="{{ url_for('oficina.os_nova', id_veiculo=v.id_veiculo) }}">{{ icon('mais') }} Abrir OS</a>
+{% endcall %}
+<section class="card">
+  <div class="card-head"><h2>Dados do veículo</h2>{{ placa(v.placa) }}</div>
+  <div class="card-corpo">
+    <dl class="dl">
+      <dt>Marca / modelo</dt><dd>{{ v.marca }} {{ v.modelo }}</dd>
+      <dt>Ano</dt><dd>{{ v.ano_fabricacao }}</dd>
+      <dt>Cor</dt><dd>{{ v.cor or '—' }}</dd>
+      <dt>Chassi</dt><dd>{{ v.numero_chassi }}</dd>
+      <dt>Quilometragem</dt><dd>{{ v.quilometragem_atual|numero }} km</dd>
+      <dt>Proprietário</dt><dd><a href="{{ url_for('oficina.cliente_detalhe', id_cliente=v.id_cliente) }}">{{ v.nome_cliente }}</a></dd>
+    </dl>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>Histórico de manutenção</h2><span class="tag">{{ ordens|length }}</span></div>
+  {% if ordens %}
+  <div class="tabela-wrap"><table class="tabela">
+    <thead><tr><th>OS</th><th>Entrada</th><th class="num">Km</th><th>Problema</th><th>Status</th><th class="num">Total</th></tr></thead>
+    <tbody>
+    {% for o in ordens %}
+      <tr>
+        <td><a class="forte" href="{{ url_for('oficina.os_detalhe', id_os=o.id_ordem_servico) }}">{{ o.numero_sequencial }}</a></td>
+        <td>{{ o.dta_entrada|data_br }}</td>
+        <td class="num">{{ o.quilometragem_entrada|numero }}</td>
+        <td>{{ o.descricao_problema|truncate(50) }}</td>
+        <td>{{ badge(o.status) }}</td>
+        <td class="num">{{ o.valor_total|moeda }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<div class="card-corpo">{{ vazio('Nenhuma ordem de serviço para este veículo.', 'os') }}</div>{% endif %}
+</section>
+{% endblock %}

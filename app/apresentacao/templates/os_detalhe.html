@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, badge, placa, vazio %}
+{% block titulo %}{{ d.os.numero_sequencial }}{% endblock %}
+{% block conteudo %}
+{% set os = d.os %}
+{% set proximo = {
+  'aguardando aprovação': ('em execução', 'Iniciar execução'),
+  'aguardando peças': ('em execução', 'Iniciar execução'),
+  'em execução': ('concluída', 'Concluir serviço'),
+  'concluída': ('entregue', 'Registrar entrega')} %}
+
+{% call cabecalho(os.numero_sequencial, 'Aberta em ' ~ (os.dta_entrada|data_br) ~ ' às ' ~ (os.hra_entrada|hora_br), voltar=url_for('oficina.ordens')) %}
+  {{ badge(os.status) }}
+{% endcall %}
+
+{% set etapas = [('aguardando aprovação', 'Orçamento'), ('aguardando peças', 'Peças'), ('em execução', 'Execução'), ('concluída', 'Concluída'), ('entregue', 'Entregue')] %}
+<section class="card">
+  {% if os.status == 'cancelada' %}
+    <div class="faixa-aviso cancelada" style="margin:20px 24px">{{ icon('x') }} Esta ordem de serviço foi cancelada e não pode mais ser alterada.</div>
+  {% else %}
+    {% set atual = (etapas|map(attribute=0)|list).index(os.status) %}
+    <div class="etapas">
+      {% for chave, rotulo in etapas %}
+        <div class="etapa {{ 'feita' if loop.index0 < atual else ('atual' if loop.index0 == atual else '') }}">{{ rotulo }}</div>
+      {% endfor %}
+    </div>
+    {% if os.status == 'entregue' %}
+      <div class="faixa-aviso ok">{{ icon('ok') }} Veículo entregue em {{ os.dta_saida|data_br }} às {{ os.hra_saida|hora_br }}.</div>
+    {% elif os.status == 'concluída' and not d.pagamento %}
+      <div class="faixa-aviso">{{ icon('dinheiro') }} Serviço concluído e ainda sem pagamento registrado.</div>
+    {% endif %}
+  {% endif %}
+</section>
+
+<div class="grid-os">
+  {# ================= coluna principal ================= #}
+  <div>
+    <section class="card">
+      <div class="card-head"><h2>{{ icon('servicos') }} Serviços executados</h2><span class="tag">{{ d.servicos|length }}</span></div>
+      {% if d.servicos %}
+      <div class="tabela-wrap"><table class="tabela">
+        <thead><tr><th>Serviço</th><th>Mecânico</th><th class="num">Qtd</th><th class="num">Valor unit.</th><th class="num">Total</th>{% if not os.fechada %}<th></th>{% endif %}</tr></thead>
+        <tbody>
+        {% for s in d.servicos %}
+          <tr>
+            <td><span class="forte">{{ s.descricao }}</span><span class="sec">{{ s.codigo }}{% if s.em_garantia %} · <span class="tag tag-ok">garantia</span>{% endif %}</span></td>
+            <td>{{ s.nome_mecanico or '—' }}</td>
+            <td class="num">{{ s.quantidade }}</td>
+            <td class="num">{{ s.valor_cobrado|moeda }}</td>
+            <td class="num forte">{{ s.total|moeda }}</td>
+            {% if not os.fechada %}
+            <td class="num"><form class="inline" method="post" data-confirm="Remover este serviço da OS?" action="{{ url_for('oficina.os_del_servico', id_os=os.id_ordem_servico, id_servico_os=s.id_servico_os) }}"><button class="btn btn-perigo btn-pq" type="submit">Remover</button></form></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+      {% else %}{{ vazio('Nenhum serviço lançado ainda.', 'servicos') }}{% endif %}
+
+      {% if opcoes %}
+      <details class="adicionar">
+        <summary>{{ icon('mais') }} Lançar serviço</summary>
+        <form method="post" action="{{ url_for('oficina.os_add_servico', id_os=os.id_ordem_servico) }}">
+          <div class="campos">
+            <div class="largo"><label for="id_servico">Serviço *</label>
+              <select id="id_servico" name="id_servico" required data-preenche="#valor_cobrado" data-attr="preco">
+                <option value="">Selecione...</option>
+                {% for s in opcoes.servicos %}<option value="{{ s.id_servico }}" data-preco="{{ s.valor_mao_obra }}">{{ s.codigo }} · {{ s.descricao }} — {{ s.valor_mao_obra|moeda }}</option>{% endfor %}
+              </select></div>
+            <div><label for="quantidade">Quantidade</label><input id="quantidade" type="number" name="quantidade" value="1" min="1"></div>
+            <div><label for="valor_cobrado">Valor unitário (R$)</label><input id="valor_cobrado" type="number" name="valor_cobrado" min="0" step="0.01" placeholder="padrão do serviço"></div>
+            <div><label for="id_mecanico">Mecânico executor</label>
+              <select id="id_mecanico" name="id_mecanico"><option value="">(responsável da OS)</option>
+                {% for m in opcoes.mecanicos %}<option value="{{ m.id_mecanico }}">{{ m.nome }}</option>{% endfor %}
+              </select></div>
+            <div class="check"><input id="gar_s" type="checkbox" name="em_garantia"><label for="gar_s">Em garantia (sem cobrança)</label></div>
+          </div>
+          <div class="form-acoes"><button class="btn" type="submit">{{ icon('mais') }} Lançar serviço</button></div>
+        </form>
+      </details>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>{{ icon('pecas') }} Peças utilizadas</h2><span class="tag">{{ d.pecas|length }}</span></div>
+      {% if d.pecas %}
+      <div class="tabela-wrap"><table class="tabela">
+        <thead><tr><th>Peça</th><th class="num">Qtd</th><th class="num">Valor unit.</th><th class="num">Total</th>{% if not os.fechada %}<th></th>{% endif %}</tr></thead>
+        <tbody>
+        {% for p in d.pecas %}
+          <tr>
+            <td><span class="forte">{{ p.descricao }}</span><span class="sec">{{ p.codigo }}{% if p.em_garantia %} · <span class="tag tag-ok">garantia</span>{% endif %}</span></td>
+            <td class="num">{{ p.qtd_utilizada }}</td>
+            <td class="num">{{ p.valor_unitario|moeda }}</td>
+            <td class="num forte">{{ (0 if p.em_garantia else p.valor_total)|moeda }}</td>
+            {% if not os.fechada %}
+            <td class="num"><form class="inline" method="post" data-confirm="Remover esta peça? Ela volta para o estoque." action="{{ url_for('oficina.os_del_peca', id_os=os.id_ordem_servico, id_item=p.id_item_peca_os) }}"><button class="btn btn-perigo btn-pq" type="submit">Remover</button></form></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+      {% else %}{{ vazio('Nenhuma peça lançada ainda.', 'pecas') }}{% endif %}
+
+      {% if opcoes %}
+      <details class="adicionar">
+        <summary>{{ icon('mais') }} Lançar peça</summary>
+        <form method="post" action="{{ url_for('oficina.os_add_peca', id_os=os.id_ordem_servico) }}">
+          <div class="campos">
+            <div class="largo"><label for="id_peca">Peça *</label>
+              <select id="id_peca" name="id_peca" required data-preenche="#valor_unitario" data-attr="preco">
+                <option value="">Selecione...</option>
+                {% for p in opcoes.pecas %}<option value="{{ p.id_peca }}" data-preco="{{ p.preco_venda }}" {{ 'disabled' if p.qtd_estoque == 0 }}>{{ p.codigo }} · {{ p.descricao }} — {{ p.preco_venda|moeda }} ({{ p.qtd_estoque }} em estoque)</option>{% endfor %}
+              </select></div>
+            <div><label for="qtd_utilizada">Quantidade</label><input id="qtd_utilizada" type="number" name="qtd_utilizada" value="1" min="1"></div>
+            <div><label for="valor_unitario">Valor unitário (R$)</label><input id="valor_unitario" type="number" name="valor_unitario" min="0" step="0.01" placeholder="preço de venda"></div>
+            <div class="check"><input id="gar_p" type="checkbox" name="em_garantia"><label for="gar_p">Em garantia (sem cobrança)</label></div>
+          </div>
+          <div class="ajuda" style="margin-top:10px">O sistema valida a compatibilidade da peça com a marca/modelo do veículo e dá baixa no estoque automaticamente.</div>
+          <div class="form-acoes"><button class="btn" type="submit">{{ icon('mais') }} Lançar peça</button></div>
+        </form>
+      </details>
+      {% endif %}
+    </section>
+  </div>
+
+  {# ================= coluna lateral ================= #}
+  <div>
+    {% if os.status in proximo or not os.fechada %}
+    <section class="card">
+      <div class="card-head"><h2>{{ icon('ok') }} Próxima ação</h2></div>
+      <div class="card-corpo">
+        {% if os.status in proximo %}
+        <form method="post" action="{{ url_for('oficina.os_status', id_os=os.id_ordem_servico) }}">
+          <input type="hidden" name="status" value="{{ proximo[os.status][0] }}">
+          <button class="btn btn-bloco" type="submit">{{ proximo[os.status][1] }}</button>
+        </form>
+        {% endif %}
+        {% if not os.fechada %}
+        <form method="post" action="{{ url_for('oficina.os_status', id_os=os.id_ordem_servico) }}" style="margin-top:12px">
+          <label for="novo_status">Alterar status manualmente</label>
+          <div style="display:flex;gap:8px">
+            <select id="novo_status" name="status">
+              {% for s in status_validos %}<option value="{{ s }}" {{ 'selected' if s == os.status }}>{{ s }}</option>{% endfor %}
+            </select>
+            <button class="btn btn-ghost" type="submit">OK</button>
+          </div>
+        </form>
+        {% endif %}
+        {% if os.status in ('concluída',) %}
+          <div class="ajuda" style="margin-top:10px">Ao registrar a entrega, data e hora de saída são preenchidas automaticamente.</div>
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="card">
+      <div class="card-head"><h2>Resumo</h2></div>
+      <div class="card-corpo">
+        <dl class="dl">
+          <dt>Cliente</dt><dd>{{ os.nome_cliente }}</dd>
+          <dt>Veículo</dt><dd>{{ placa(os.placa) }} <span class="sec" style="display:inline">{{ os.marca }} {{ os.modelo }}</span></dd>
+          <dt>Km entrada</dt><dd>{{ os.quilometragem_entrada|numero }} km</dd>
+          <dt>Mecânico</dt><dd>{{ os.nome_mecanico or '—' }}</dd>
+          <dt>Previsão</dt><dd>{{ os.dta_previsao_conclusao|data_br }}</dd>
+          {% if os.dta_saida %}<dt>Saída</dt><dd>{{ os.dta_saida|data_br }} {{ os.hra_saida|hora_br }}</dd>{% endif %}
+          <dt>Problema</dt><dd>{{ os.descricao_problema }}</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>{{ icon('dinheiro') }} Orçamento</h2></div>
+      <div class="card-corpo">
+        <div class="linha-total"><span>Peças</span><span>{{ os.subtotal_pecas|moeda }}</span></div>
+        <div class="linha-total"><span>Mão de obra</span><span>{{ os.subtotal_mao_obra|moeda }}</span></div>
+        <div class="linha-total"><span>Desconto</span><span>− {{ os.desconto|moeda }}</span></div>
+        <div class="linha-total forte"><span>Total</span><span class="total-grande">{{ os.valor_total|moeda }}</span></div>
+        {% if not os.fechada %}
+        <form method="post" action="{{ url_for('oficina.os_desconto', id_os=os.id_ordem_servico) }}" style="margin-top:14px">
+          <label for="desconto">Desconto (R$)</label>
+          <div style="display:flex;gap:8px">
+            <input id="desconto" type="number" name="desconto" min="0" step="0.01" value="{{ os.desconto }}">
+            <button class="btn btn-ghost" type="submit">Aplicar</button>
+          </div>
+          <div class="ajuda">Máximo de 20% sobre peças + mão de obra.</div>
+        </form>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>{{ icon('relogio') }} Pagamento</h2></div>
+      {% if d.pagamento %}
+        <div class="card-corpo">
+          <dl class="dl">
+            <dt>Código</dt><dd>{{ d.pagamento.codigo }}</dd>
+            <dt>Forma</dt><dd>{{ d.pagamento.forma_pagamento|capitalize }} em {{ d.pagamento.numero_parcelas }}x</dd>
+            <dt>Valor</dt><dd>{{ d.pagamento.valor_total|moeda }}</dd>
+          </dl>
+        </div>
+        <div class="tabela-wrap"><table class="tabela">
+          <thead><tr><th>Parcela</th><th>Vencimento</th><th class="num">Valor</th><th>Situação</th></tr></thead>
+          <tbody>
+          {% for p in d.pagamento.parcelas %}
+            {% set vencida = p.status != 'pago' and p.dta_vencimento < hoje %}
+            <tr>
+              <td>{{ p.numero_parcela }}/{{ d.pagamento.numero_parcelas }}</td>
+              <td>{{ p.dta_vencimento|data_br }}</td>
+              <td class="num">{{ p.valor_parcela|moeda }}</td>
+              <td>{{ badge('atrasado' if vencida else p.status) }}{% if p.dta_pagamento %}<span class="sec">{{ p.dta_pagamento|data_br }}</span>{% endif %}
+                {% if p.status != 'pago' %}<form class="inline" method="post" action="{{ url_for('oficina.os_pagar_parcela', id_os=os.id_ordem_servico, numero=p.numero_parcela) }}"><button class="btn btn-ghost btn-pq" type="submit" style="margin-top:6px">Dar baixa</button></form>{% endif %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table></div>
+      {% elif d.pode_pagar %}
+        <form method="post" action="{{ url_for('oficina.os_pagamento', id_os=os.id_ordem_servico) }}">
+          <div class="card-corpo">
+            <div class="campos" style="grid-template-columns:1fr">
+              <div><label for="forma_pagamento">Forma de pagamento *</label>
+                <select id="forma_pagamento" name="forma_pagamento" required>{% for f in formas %}<option value="{{ f }}">{{ f|capitalize }}</option>{% endfor %}</select></div>
+              <div><label for="numero_parcelas">Parcelas</label><input id="numero_parcelas" type="number" name="numero_parcelas" value="1" min="1" max="12">
+                <div class="ajuda">Parcelamento apenas em cartão de crédito ou boleto.</div></div>
+            </div>
+          </div>
+          <div class="form-acoes"><button class="btn btn-bloco" type="submit">Registrar pagamento de {{ os.valor_total|moeda }}</button></div>
+        </form>
+      {% else %}
+        <div class="card-corpo">{{ vazio('O pagamento é registrado depois que a OS for concluída.', 'relogio') }}</div>
+      {% endif %}
+    </section>
+
+  </div>
+</div>
+{% endblock %}

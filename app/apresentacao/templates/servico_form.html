@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, campo %}
+{% block titulo %}Novo serviço{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Novo serviço', 'Cadastre um serviço no catálogo da oficina', voltar=url_for('oficina.servicos')) %}{% endcall %}
+<form class="card" method="post">
+  <div class="card-head"><h2>{{ icon('servicos') }} Dados do serviço</h2></div>
+  <div class="card-corpo">
+    <div class="campos">
+      {{ campo('codigo', 'Código', form, obrigatorio=true, placeholder='SRV-011') }}
+      {{ campo('descricao', 'Descrição', form, obrigatorio=true) }}
+      {{ campo('categoria', 'Categoria', form, obrigatorio=true, placeholder='Ex.: Freios, Motor, Elétrica') }}
+      {{ campo('tempo_medio_execucao', 'Tempo médio de execução (min)', form, tipo='number', obrigatorio=true, extra='min="1"') }}
+      {{ campo('valor_mao_obra', 'Valor da mão de obra (R$)', form, tipo='number', obrigatorio=true, extra='min="0" step="0.01"') }}
+      {{ campo('periodo_garantia', 'Período de garantia (dias)', form, tipo='number', extra='min="0"') }}
+    </div>
+  </div>
+  <div class="form-acoes">
+    <button class="btn" type="submit">{{ icon('ok') }} Salvar serviço</button>
+    <a class="btn btn-ghost" href="{{ url_for('oficina.servicos') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, barra_busca, vazio %}
+{% block titulo %}Fornecedores{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Fornecedores') %}
+  <a class="btn" href="{{ url_for('oficina.fornecedor_novo') }}">{{ icon('mais') }} Novo fornecedor</a>
+{% endcall %}
+<div class="card">
+  {{ barra_busca('Buscar por razão social ou CNPJ', busca) }}
+  {% if fornecedores %}
+  <div class="tabela-wrap"><table class="tabela">
+    <thead><tr><th>Razão social</th><th>CNPJ</th><th>Telefone</th></tr></thead>
+    <tbody>
+    {% for f in fornecedores %}
+      <tr>
+        <td><a class="forte" href="{{ url_for('oficina.fornecedor_detalhe', id_fornecedor=f.id_fornecedor) }}">{{ f.razao_social }}</a></td>
+        <td>{{ f.cnpj }}</td>
+        <td>{{ f.telefone }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}{{ vazio('Nenhum fornecedor encontrado.', 'fornecedor') }}{% endif %}
+</div>
+{% endblock %}

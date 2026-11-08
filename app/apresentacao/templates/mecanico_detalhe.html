@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho %}
+{% block titulo %}{{ d.mecanico.nome }}{% endblock %}
+{% block conteudo %}
+{% set m = d.mecanico %}
+{% call cabecalho(m.nome, m.especialidade, voltar=url_for('oficina.mecanicos')) %}{% endcall %}
+<section class="card">
+  <div class="card-head"><h2>Dados do mecânico</h2></div>
+  <div class="card-corpo">
+    <dl class="dl">
+      <dt>CPF</dt><dd>{{ m.cpf }}</dd>
+      <dt>Especialidade</dt><dd>{{ m.especialidade }}</dd>
+      <dt>Admissão</dt><dd>{{ m.dta_admissao|data_br }}</dd>
+      <dt>Comissão</dt><dd>{{ m.percentual_comissao }}%</dd>
+    </dl>
+  </div>
+</section>
+{% endblock %}

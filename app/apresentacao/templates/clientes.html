@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, barra_busca, vazio %}
+{% block titulo %}Clientes{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Clientes') %}
+  <a class="btn" href="{{ url_for('oficina.cliente_novo') }}">{{ icon('mais') }} Novo cliente</a>
+{% endcall %}
+<div class="card">
+  {{ barra_busca('Buscar por nome, CPF ou CNPJ', busca) }}
+  {% if clientes %}
+  <div class="tabela-wrap"><table class="tabela">
+    <thead><tr><th>Nome</th><th>Tipo</th><th>CPF / CNPJ</th><th>Telefone</th></tr></thead>
+    <tbody>
+    {% for c in clientes %}
+      <tr>
+        <td><a class="forte" href="{{ url_for('oficina.cliente_detalhe', id_cliente=c.id_cliente) }}">{{ c.nome }}</a></td>
+        <td>{{ c.tipo_descricao }}</td>
+        <td>{{ c.documento }}</td>
+        <td>{{ c.telefones|join(' · ') or '—' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}{{ vazio('Nenhum cliente encontrado.', 'clientes') }}{% endif %}
+</div>
+{% endblock %}

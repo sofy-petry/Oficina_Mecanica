@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, campo, area, selecao %}
+{% block titulo %}Abrir ordem de serviço{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Abrir ordem de serviço', 'Registre a entrada do veículo na oficina', voltar=url_for('oficina.ordens')) %}{% endcall %}
+
+<form class="card" method="post">
+  <div class="card-head"><h2>{{ icon('carro') }} Veículo e atendimento</h2></div>
+  <div class="card-corpo">
+    <div class="campos">
+      <div>
+        <label for="id_veiculo">Veículo *</label>
+        <select id="id_veiculo" name="id_veiculo" required data-preenche="#quilometragem_entrada" data-attr="km">
+          <option value="">Selecione...</option>
+          {% for v in veiculos %}
+            <option value="{{ v.id_veiculo }}" data-km="{{ v.quilometragem_atual }}" {{ 'selected' if form.get('id_veiculo', '')|string == v.id_veiculo|string }}>{{ v.placa }} · {{ v.marca }} {{ v.modelo }} - {{ v.nome_cliente }}</option>
+          {% endfor %}
+        </select>
+        <div class="ajuda">Veículo não cadastrado? <a href="{{ url_for('oficina.veiculo_novo') }}">Cadastre aqui</a>.</div>
+      </div>
+      {{ campo('quilometragem_entrada', 'Quilometragem na entrada', form, tipo='number', obrigatorio=true, extra='min="0"', ajuda='Ao escolher o veículo, preenchemos com a km atual. Não pode ser menor que ela.') }}
+      {{ selecao('id_mecanico_responsavel', 'Mecânico responsável', mecanicos_opcoes, form, vazio='(definir depois)') }}
+      {{ campo('dta_previsao_conclusao', 'Previsão de conclusão', form, tipo='date') }}
+      {{ area('descricao_problema', 'Problema relatado pelo cliente', form, obrigatorio=true, placeholder='Ex.: barulho ao frear, luz da injeção acesa…') }}
+    </div>
+  </div>
+  <div class="form-acoes">
+    <button class="btn" type="submit">{{ icon('ok') }} Abrir OS</button>
+    <a class="btn btn-ghost" href="{{ url_for('oficina.ordens') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

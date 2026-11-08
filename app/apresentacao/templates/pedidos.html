@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, barra_busca, badge, vazio %}
+{% block titulo %}Pedidos de peças{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Pedidos de peças') %}
+  <a class="btn" href="{{ url_for('oficina.pedido_novo') }}">{{ icon('mais') }} Novo pedido</a>
+{% endcall %}
+<div class="card">
+  {% call barra_busca('Código do pedido ou fornecedor', busca) %}
+    <select name="status" data-autosubmit aria-label="Status">
+      <option value="">Todos os status</option>
+      {% for s in status_validos %}<option value="{{ s }}" {{ 'selected' if s == status }}>{{ s|capitalize }}</option>{% endfor %}
+    </select>
+  {% endcall %}
+  {% if pedidos %}
+  <div class="tabela-wrap"><table class="tabela">
+    <thead><tr><th>Pedido</th><th>Fornecedor</th><th>Data</th><th>Status</th><th class="num">Total</th></tr></thead>
+    <tbody>
+    {% for p in pedidos %}
+      <tr>
+        <td><a class="forte" href="{{ url_for('oficina.pedido_detalhe', id_pedido=p.id_pedido_peca) }}">{{ p.codigo_pedido }}</a></td>
+        <td>{{ p.razao_social }}</td>
+        <td>{{ p.data_pedido|data_br }}</td>
+        <td>{{ badge(p.status) }}</td>
+        <td class="num">{{ p.valor_total|moeda }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}{{ vazio('Nenhum pedido encontrado.', 'pedido') }}{% endif %}
+</div>
+{% endblock %}

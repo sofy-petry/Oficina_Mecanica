@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import cabecalho, badge, vazio %}
+{% block titulo %}Movimentações{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Movimentações de estoque', 'Registradas automaticamente pelo sistema', voltar=url_for('oficina.pecas')) %}{% endcall %}
+<div class="card">
+  {% if movs %}
+  <div class="tabela-wrap"><table class="tabela">
+    <thead><tr><th>Data</th><th>Peça</th><th>Tipo</th><th class="num">Qtd</th></tr></thead>
+    <tbody>
+    {% for m in movs %}
+      <tr>
+        <td>{{ m.data_movimentacao|data_br }}</td>
+        <td><a class="forte" href="{{ url_for('oficina.peca_detalhe', id_peca=m.id_peca) }}">{{ m.peca_descricao }}</a></td>
+        <td>{{ badge(m.tipo) }}</td>
+        <td class="num">{{ m.quantidade }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}{{ vazio('Nenhuma movimentação registrada.', 'mov') }}{% endif %}
+</div>
+{% endblock %}

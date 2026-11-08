@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, badge, placa, vazio %}
+{% block titulo %}Painel{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Painel') %}
+  <a class="btn" href="{{ url_for('oficina.os_nova') }}">{{ icon('mais') }} Abrir ordem de serviço</a>
+{% endcall %}
+
+{% if painel %}
+{% set k = painel.kpis %}
+<div class="kpis">
+  <a class="kpi" href="{{ url_for('oficina.ordens') }}"><span class="kpi-icone">{{ icon('os') }}</span><span><div class="kpi-rotulo">OS em andamento</div><div class="kpi-valor">{{ k.os_em_andamento }}</div></span></a>
+  <a class="kpi" href="{{ url_for('oficina.ordens') }}"><span class="kpi-icone">{{ icon('ok') }}</span><span><div class="kpi-rotulo">Prontas para retirada</div><div class="kpi-valor">{{ k.prontas_retirada }}</div></span></a>
+  <div class="kpi"><span class="kpi-icone">{{ icon('relogio') }}</span><span><div class="kpi-rotulo">A receber</div><div class="kpi-valor">{{ k.a_receber|moeda }}</div></span></div>
+  <a class="kpi" href="{{ url_for('oficina.pecas') }}"><span class="kpi-icone">{{ icon('pecas') }}</span><span><div class="kpi-rotulo">Peças com estoque baixo</div><div class="kpi-valor">{{ k.estoque_baixo }}</div></span></a>
+</div>
+
+<section class="card">
+  <div class="card-head"><h2>Ordens de serviço abertas</h2><a href="{{ url_for('oficina.ordens') }}">Ver todas</a></div>
+  {% set abertas = [] %}
+  {% for status, lista in painel.quadro %}{% for o in lista %}{% if abertas.append(o) %}{% endif %}{% endfor %}{% endfor %}
+  {% if abertas %}
+  <div class="tabela-wrap"><table class="tabela">
+    <thead><tr><th>OS</th><th>Veículo</th><th>Cliente</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for o in abertas %}
+      <tr>
+        <td><a class="forte" href="{{ url_for('oficina.os_detalhe', id_os=o.id_ordem_servico) }}">{{ o.numero_sequencial }}</a></td>
+        <td>{{ placa(o.placa) }}</td>
+        <td>{{ o.nome_cliente }}</td>
+        <td>{{ badge(o.status) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}{{ vazio('Nenhuma ordem de serviço aberta.', 'os') }}{% endif %}
+</section>
+{% else %}
+  {{ vazio('Não foi possível carregar o painel.', 'os') }}
+{% endif %}
+{% endblock %}

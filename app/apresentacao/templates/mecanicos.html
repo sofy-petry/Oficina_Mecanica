@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, barra_busca, vazio %}
+{% block titulo %}Mecânicos{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Mecânicos') %}
+  <a class="btn" href="{{ url_for('oficina.mecanico_novo') }}">{{ icon('mais') }} Novo mecânico</a>
+{% endcall %}
+<div class="card">
+  {{ barra_busca('Buscar por nome, CPF ou especialidade', busca) }}
+  {% if mecanicos %}
+  <div class="tabela-wrap"><table class="tabela">
+    <thead><tr><th>Nome</th><th>Especialidade</th><th>CPF</th><th class="num">Comissão</th></tr></thead>
+    <tbody>
+    {% for m in mecanicos %}
+      <tr>
+        <td><a class="forte" href="{{ url_for('oficina.mecanico_detalhe', id_mecanico=m.id_mecanico) }}">{{ m.nome }}</a></td>
+        <td>{{ m.especialidade }}</td>
+        <td>{{ m.cpf }}</td>
+        <td class="num">{{ m.percentual_comissao }}%</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}{{ vazio('Nenhum mecânico encontrado.', 'clientes') }}{% endif %}
+</div>
+{% endblock %}

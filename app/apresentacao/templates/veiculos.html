@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, barra_busca, placa, vazio %}
+{% block titulo %}Veículos{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Veículos', veiculos|length ~ (' encontrado' if veiculos|length == 1 else ' encontrados')) %}
+  <a class="btn" href="{{ url_for('oficina.veiculo_novo') }}">{{ icon('mais') }} Novo veículo</a>
+{% endcall %}
+<div class="card">
+  {{ barra_busca('Buscar por placa, marca, modelo ou proprietário', busca) }}
+  {% if veiculos %}
+  <div class="tabela-wrap"><table class="tabela">
+    <thead><tr><th>Placa</th><th>Veículo</th><th>Ano</th><th>Cor</th><th class="num">Km atual</th><th>Proprietário</th></tr></thead>
+    <tbody>
+    {% for v in veiculos %}
+      <tr>
+        <td><a href="{{ url_for('oficina.veiculo_detalhe', id_veiculo=v.id_veiculo) }}">{{ placa(v.placa) }}</a></td>
+        <td><span class="forte">{{ v.marca }} {{ v.modelo }}</span></td>
+        <td>{{ v.ano_fabricacao }}</td>
+        <td>{{ v.cor or '—' }}</td>
+        <td class="num">{{ v.quilometragem_atual|numero }} km</td>
+        <td><a href="{{ url_for('oficina.cliente_detalhe', id_cliente=v.id_cliente) }}">{{ v.nome_cliente }}</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}{{ vazio('Nenhum veículo encontrado.', 'carro') }}{% endif %}
+</div>
+{% endblock %}

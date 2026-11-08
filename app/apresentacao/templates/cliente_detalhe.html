@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, placa, badge, vazio %}
+{% block titulo %}{{ cliente.nome }}{% endblock %}
+{% block conteudo %}
+{% call cabecalho(cliente.nome, cliente.tipo_descricao, voltar=url_for('oficina.clientes')) %}
+  <a class="btn" href="{{ url_for('oficina.veiculo_novo', id_cliente=cliente.id_cliente) }}">{{ icon('mais') }} Cadastrar veículo</a>
+{% endcall %}
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head"><h2>Dados</h2></div>
+    <div class="card-corpo">
+      <dl class="dl">
+        <dt>{{ cliente.rotulo_documento }}</dt><dd>{{ cliente.documento }}</dd>
+        <dt>E-mail</dt><dd>{{ cliente.email or '—' }}</dd>
+        <dt>Telefones</dt><dd>{{ cliente.telefones|join(' · ') or '—' }}</dd>
+        <dt>Endereço</dt><dd>{{ cliente.endereco }}</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Veículos</h2><span class="tag">{{ veiculos|length }}</span></div>
+    {% if veiculos %}
+    <ul class="lista-linhas">
+      {% for v in veiculos %}
+        <li><span class="principal"><b><a href="{{ url_for('oficina.veiculo_detalhe', id_veiculo=v.id_veiculo) }}">{{ v.marca }} {{ v.modelo }}</a></b></span>{{ placa(v.placa) }}</li>
+      {% endfor %}
+    </ul>
+    {% else %}<div class="card-corpo">{{ vazio('Nenhum veículo cadastrado.', 'carro') }}</div>{% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-head"><h2>Histórico de ordens de serviço</h2><span class="tag">{{ ordens|length }}</span></div>
+  {% if ordens %}
+  <div class="tabela-wrap"><table class="tabela">
+    <thead><tr><th>OS</th><th>Entrada</th><th>Veículo</th><th>Status</th><th class="num">Total</th></tr></thead>
+    <tbody>
+    {% for o in ordens %}
+      <tr>
+        <td><a class="forte" href="{{ url_for('oficina.os_detalhe', id_os=o.id_ordem_servico) }}">{{ o.numero_sequencial }}</a></td>
+        <td>{{ o.dta_entrada|data_br }}</td>
+        <td>{{ placa(o.placa) }}</td>
+        <td>{{ badge(o.status) }}</td>
+        <td class="num">{{ o.valor_total|moeda }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<div class="card-corpo">{{ vazio('Este cliente ainda não tem ordens de serviço.', 'os') }}</div>{% endif %}
+</section>
+{% endblock %}

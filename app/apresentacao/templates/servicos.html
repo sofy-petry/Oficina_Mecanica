@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, barra_busca, vazio %}
+{% block titulo %}Serviços{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Catálogo de serviços', servicos|length ~ ' serviços cadastrados') %}
+  <a class="btn" href="{{ url_for('oficina.servico_novo') }}">{{ icon('mais') }} Novo serviço</a>
+{% endcall %}
+<div class="card">
+  {{ barra_busca('Buscar por código, descrição ou categoria', busca) }}
+  {% if servicos %}
+  <div class="tabela-wrap"><table class="tabela">
+    <thead><tr><th>Serviço</th><th>Categoria</th><th class="num">Tempo médio</th><th class="num">Mão de obra</th><th class="num">Garantia</th></tr></thead>
+    <tbody>
+    {% for s in servicos %}
+      <tr>
+        <td><span class="forte">{{ s.descricao }}</span><span class="sec">{{ s.codigo }}</span></td>
+        <td><span class="tag">{{ s.categoria }}</span></td>
+        <td class="num">{{ s.tempo_medio_execucao // 60 }}h{{ '%02d' % (s.tempo_medio_execucao % 60) }}</td>
+        <td class="num forte">{{ s.valor_mao_obra|moeda }}</td>
+        <td class="num">{{ s.periodo_garantia }} dias</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}{{ vazio('Nenhum serviço encontrado.', 'servicos') }}{% endif %}
+</div>
+{% endblock %}

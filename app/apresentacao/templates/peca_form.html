@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, campo %}
+{% block titulo %}Nova peça{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Nova peça', 'Cadastro de item do estoque', voltar=url_for('oficina.pecas')) %}{% endcall %}
+<form class="card" method="post">
+  <div class="card-head"><h2>{{ icon('pecas') }} Identificação</h2></div>
+  <div class="card-corpo">
+    <div class="campos">
+      {{ campo('codigo', 'Código', form, obrigatorio=true, placeholder='PC-011') }}
+      {{ campo('descricao', 'Descrição', form, obrigatorio=true) }}
+      {{ campo('fabricante', 'Fabricante', form, obrigatorio=true) }}
+      {{ campo('cod_fabricante', 'Código do fabricante', form) }}
+    </div>
+  </div>
+  <div class="card-head" style="border-top:1px solid var(--linha)"><h2>{{ icon('dinheiro') }} Estoque e preços</h2></div>
+  <div class="card-corpo">
+    <div class="campos">
+      {{ campo('qtd_estoque', 'Quantidade em estoque', form, tipo='number', extra='min="0"') }}
+      {{ campo('qtd_minimo', 'Estoque mínimo', form, tipo='number', extra='min="0"', ajuda='Abaixo disso a peça aparece como estoque baixo.') }}
+      {{ campo('preco_custo', 'Preço de custo (R$)', form, tipo='number', obrigatorio=true, extra='min="0" step="0.01"') }}
+      {{ campo('preco_venda', 'Preço de venda (R$)', form, tipo='number', obrigatorio=true, extra='min="0" step="0.01"') }}
+      {{ campo('periodo_garantia', 'Período de garantia (dias)', form, tipo='number', extra='min="0"') }}
+    </div>
+  </div>
+  <div class="card-head" style="border-top:1px solid var(--linha)"><h2>{{ icon('carro') }} Compatibilidade</h2></div>
+  <div class="card-corpo">
+    <div class="campos">
+      {{ campo('marcas', 'Marcas compatíveis', form, ajuda='Separe por vírgula. Deixe vazio se servir para qualquer marca.', placeholder='Fiat, Volkswagen') }}
+      {{ campo('modelos', 'Modelos compatíveis', form, ajuda='Separe por vírgula. Deixe vazio se servir para qualquer modelo.', placeholder='Uno, Gol') }}
+    </div>
+  </div>
+  <div class="form-acoes">
+    <button class="btn" type="submit">{{ icon('ok') }} Salvar peça</button>
+    <a class="btn btn-ghost" href="{{ url_for('oficina.pecas') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

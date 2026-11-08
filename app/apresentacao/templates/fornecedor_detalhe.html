@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, vazio %}
+{% block titulo %}{{ d.fornecedor.razao_social }}{% endblock %}
+{% block conteudo %}
+{% set f = d.fornecedor %}
+{% call cabecalho(f.razao_social, 'CNPJ ' ~ f.cnpj, voltar=url_for('oficina.fornecedores')) %}
+  <a class="btn" href="{{ url_for('oficina.pedido_novo', id_fornecedor=f.id_fornecedor) }}">{{ icon('pedido') }} Fazer pedido</a>
+{% endcall %}
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head"><h2>Dados</h2></div>
+    <div class="card-corpo">
+      <dl class="dl">
+        <dt>Telefone</dt><dd>{{ f.telefone }}</dd>
+        <dt>E-mail</dt><dd>{{ f.email or '—' }}</dd>
+        <dt>Endereço</dt><dd>{{ f.endereco }}</dd>
+        <dt>Pagamento</dt><dd>{{ f.condicao_pagamento or '—' }}</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Peças fornecidas</h2><span class="tag">{{ d.fornecimentos|length }}</span></div>
+    {% if d.fornecimentos %}
+    <div class="tabela-wrap"><table class="tabela">
+      <thead><tr><th>Peça</th><th class="num">Preço</th><th class="num">Prazo</th></tr></thead>
+      <tbody>
+      {% for x in d.fornecimentos %}
+        <tr><td><a class="forte" href="{{ url_for('oficina.peca_detalhe', id_peca=x.id_peca) }}">{{ x.descricao }}</a><span class="sec">{{ x.codigo }}</span></td>
+            <td class="num">{{ x.preco_praticado|moeda }}</td><td class="num">{{ x.prazo_entrega }} dias</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}<div class="card-corpo">{{ vazio('Este fornecedor ainda não tem peças vinculadas.', 'pecas') }}</div>{% endif %}
+
+    <details class="adicionar">
+      <summary>{{ icon('mais') }} Vincular peça (ou atualizar preço e prazo)</summary>
+      <form method="post" action="{{ url_for('oficina.fornecedor_vincular_peca', id_fornecedor=f.id_fornecedor) }}">
+        <div class="campos">
+          <div class="largo"><label for="id_peca">Peça *</label>
+            <select id="id_peca" name="id_peca" required><option value="">Selecione...</option>
+              {% for p in d.pecas %}<option value="{{ p.id_peca }}">{{ p.codigo }} · {{ p.descricao }}</option>{% endfor %}
+            </select></div>
+          <div><label for="preco_praticado">Preço praticado (R$) *</label><input id="preco_praticado" type="number" name="preco_praticado" min="0" step="0.01" required></div>
+          <div><label for="prazo_entrega">Prazo de entrega (dias) *</label><input id="prazo_entrega" type="number" name="prazo_entrega" min="0" required></div>
+        </div>
+        <div class="form-acoes"><button class="btn" type="submit">{{ icon('ok') }} Salvar vínculo</button></div>
+      </form>
+    </details>
+  </section>
+</div>
+
+{% endblock %}

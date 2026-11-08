@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, vazio %}
+{% block titulo %}Novo pedido de peças{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Novo pedido de peças', 'Escolha o fornecedor e informe as quantidades', voltar=url_for('oficina.pedidos')) %}{% endcall %}
+
+{# ---- etapa 1: fornecedor ---- #}
+<form class="card" method="get">
+  <div class="card-head"><h2>{{ icon('fornecedor') }} 1. Fornecedor</h2></div>
+  <div class="card-corpo">
+    <div class="campos">
+      <div class="largo">
+        <label for="id_fornecedor_sel">Fornecedor *</label>
+        <select id="id_fornecedor_sel" name="id_fornecedor" required data-autosubmit>
+          <option value="">Selecione...</option>
+          {% for f in d.fornecedores %}<option value="{{ f.id_fornecedor }}" {{ 'selected' if d.fornecedor and d.fornecedor.id_fornecedor == f.id_fornecedor }}>{{ f.razao_social }}</option>{% endfor %}
+        </select>
+        <div class="ajuda">As peças e os preços exibidos vêm do catálogo de fornecimento do fornecedor escolhido.</div>
+      </div>
+    </div>
+    {% if form.get('id_ordem_servico') %}<input type="hidden" name="id_ordem_servico" value="{{ form.get('id_ordem_servico') }}">{% endif %}
+  </div>
+</form>
+
+{# ---- etapa 2: itens ---- #}
+{% if d.fornecedor %}
+  {% if d.fornecimentos %}
+  <form class="card" method="post">
+    <input type="hidden" name="id_fornecedor" value="{{ d.fornecedor.id_fornecedor }}">
+    <div class="card-head"><h2>{{ icon('pecas') }} 2. Peças de {{ d.fornecedor.razao_social }}</h2><span class="tag">{{ d.fornecedor.condicao_pagamento or 'condição não informada' }}</span></div>
+    <div class="tabela-wrap"><table class="tabela">
+      <thead><tr><th>Peça</th><th class="num">Em estoque</th><th class="num">Preço</th><th class="num">Prazo</th><th class="num" style="width:120px">Quantidade</th><th class="num">Subtotal</th></tr></thead>
+      <tbody>
+      {% for x in d.fornecimentos %}
+        <tr>
+          <td><span class="forte">{{ x.descricao }}</span><span class="sec">{{ x.codigo }}</span></td>
+          <td class="num {{ 'texto-perigo' if x.qtd_estoque == 0 }}">{{ x.qtd_estoque }}</td>
+          <td class="num">{{ x.preco_praticado|moeda }}</td>
+          <td class="num">{{ x.prazo_entrega }} dias</td>
+          <td class="num"><input class="js-qtd" type="number" name="qtd_{{ x.id_peca }}" min="0" value="{{ form.get('qtd_' ~ x.id_peca, 0) }}" data-preco="{{ x.preco_praticado }}" data-id="{{ x.id_peca }}" aria-label="Quantidade de {{ x.descricao }}"></td>
+          <td class="num" id="sub-{{ x.id_peca }}">—</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      <tfoot><tr><td colspan="5" class="num forte" style="text-align:right">Total do pedido</td><td class="num total-grande" id="total-pedido" style="font-size:18px">R$ 0,00</td></tr></tfoot>
+    </table></div>
+    <div class="card-corpo" style="border-top:1px solid var(--linha)">
+      <div class="campos">
+        <div>
+          <label for="id_ordem_servico">Vincular a uma ordem de serviço</label>
+          <select id="id_ordem_servico" name="id_ordem_servico">
+            <option value="">(estoque geral, sem OS)</option>
+            {% for o in d.ordens %}<option value="{{ o.id_ordem_servico }}" {{ 'selected' if form.get('id_ordem_servico', '')|string == o.id_ordem_servico|string }}>{{ o.numero_sequencial }} · {{ o.placa }} · {{ o.nome_cliente }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="previsao_entrega">Previsão de entrega</label>
+          <input id="previsao_entrega" type="date" name="previsao_entrega" value="{{ form.get('previsao_entrega', '') }}">
+          <div class="ajuda">Em branco: usamos hoje + o maior prazo entre as peças pedidas.</div>
+        </div>
+      </div>
+    </div>
+    <div class="form-acoes">
+      <button class="btn" type="submit">{{ icon('ok') }} Registrar pedido</button>
+      <a class="btn btn-ghost" href="{{ url_for('oficina.pedidos') }}">Cancelar</a>
+    </div>
+  </form>
+  {% else %}
+  <div class="card"><div class="card-corpo">
+    {{ vazio('Este fornecedor ainda não tem peças vinculadas, então não há o que pedir.', 'pecas') }}
+    <div style="text-align:center"><a class="btn" href="{{ url_for('oficina.fornecedor_detalhe', id_fornecedor=d.fornecedor.id_fornecedor) }}">Vincular peças ao fornecedor</a></div>
+  </div></div>
+  {% endif %}
+{% endif %}
+{% endblock %}

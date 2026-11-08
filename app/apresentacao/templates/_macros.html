@@ -1,0 +1,83 @@
+{# ========================================================================
+   Macros reutilizáveis: ícones, cabeçalho de página, campos de formulário,
+   selos de status, avatar, placa e estados vazios.
+   ======================================================================== #}
+
+{% macro icon(nome, classe='') -%}
+<svg class="ico {{ classe }}" aria-hidden="true"><use href="#i-{{ nome }}"/></svg>
+{%- endmacro %}
+
+{# Cabeçalho da página. O bloco {% call %} vira os botões de ação à direita. #}
+{% macro cabecalho(titulo, subtitulo='', voltar='') %}
+<div class="page-head">
+  <div>
+    {% if voltar %}<a class="voltar" href="{{ voltar }}">{{ icon('seta') }} Voltar</a>{% endif %}
+    <h1>{{ titulo }}</h1>
+    {% if subtitulo %}<p class="sub">{{ subtitulo }}</p>{% endif %}
+  </div>
+  <div class="page-actions">{% if caller %}{{ caller() }}{% endif %}</div>
+</div>
+{% endmacro %}
+
+{# Barra de busca de listas; o {% call %} acrescenta filtros extras (selects, checkbox). #}
+{% macro barra_busca(placeholder, valor, nome='busca') %}
+<form class="barra-filtros" method="get">
+  <div class="busca">
+    {{ icon('busca') }}
+    <input type="search" name="{{ nome }}" value="{{ valor }}" placeholder="{{ placeholder }}">
+  </div>
+  {% if caller %}{{ caller() }}{% endif %}
+  <button class="btn btn-ghost" type="submit">Buscar</button>
+</form>
+{% endmacro %}
+
+{% macro campo(nome, rotulo, form, tipo='text', obrigatorio=false, ajuda='', extra='', largo=false, mask='', placeholder='') %}
+<div class="{{ 'largo' if largo }}">
+  <label for="{{ nome }}">{{ rotulo }}{% if obrigatorio %} *{% endif %}</label>
+  <input id="{{ nome }}" type="{{ tipo }}" name="{{ nome }}" value="{{ form.get(nome, '') }}"
+         {% if mask %}data-mask="{{ mask }}"{% endif %} {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+         {{ 'required' if obrigatorio }} {{ extra|safe }}>
+  {% if ajuda %}<div class="ajuda">{{ ajuda }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro area(nome, rotulo, form, obrigatorio=false, ajuda='', placeholder='') %}
+<div class="largo">
+  <label for="{{ nome }}">{{ rotulo }}{% if obrigatorio %} *{% endif %}</label>
+  <textarea id="{{ nome }}" name="{{ nome }}" {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+            {{ 'required' if obrigatorio }}>{{ form.get(nome, '') }}</textarea>
+  {% if ajuda %}<div class="ajuda">{{ ajuda }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{# opcoes: lista de pares (valor, rótulo) #}
+{% macro selecao(nome, rotulo, opcoes, form, obrigatorio=false, vazio='Selecione...', largo=false) %}
+<div class="{{ 'largo' if largo }}">
+  <label for="{{ nome }}">{{ rotulo }}{% if obrigatorio %} *{% endif %}</label>
+  <select id="{{ nome }}" name="{{ nome }}" {{ 'required' if obrigatorio }}>
+    <option value="">{{ vazio }}</option>
+    {% for valor, texto in opcoes %}
+      <option value="{{ valor }}" {{ 'selected' if form.get(nome, '')|string == valor|string }}>{{ texto }}</option>
+    {% endfor %}
+  </select>
+</div>
+{% endmacro %}
+
+{% macro badge(status) %}<span class="badge st-{{ status|slug }}">{{ status }}</span>{% endmacro %}
+
+{% macro avatar(nome, classe='') %}<span class="avatar {{ classe }}">{{ nome|iniciais }}</span>{% endmacro %}
+
+{% macro placa(texto, grande=false) %}<span class="placa {{ 'placa-grande' if grande }}">{{ texto }}</span>{% endmacro %}
+
+{% macro vazio(texto, icone='pecas') %}
+<div class="vazio">{{ icon(icone) }}{{ texto }}</div>
+{% endmacro %}
+
+{# Indicador de prazo de uma OS: data + texto relativo, em vermelho se atrasada #}
+{% macro prazo_os(os) %}
+{% if os.dta_previsao_conclusao %}
+  {% set atrasada = os.em_andamento and os.dta_previsao_conclusao < hoje %}
+  {{ os.dta_previsao_conclusao|data_br }}
+  <span class="sec {{ 'texto-perigo' if atrasada }}">{{ 'atrasada · ' if atrasada }}{{ os.dta_previsao_conclusao|relativo }}</span>
+{% else %}<span class="sec">sem previsão</span>{% endif %}
+{% endmacro %}

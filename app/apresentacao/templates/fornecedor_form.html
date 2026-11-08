@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, cabecalho, campo %}
+{% block titulo %}Novo fornecedor{% endblock %}
+{% block conteudo %}
+{% call cabecalho('Novo fornecedor', 'Cadastro de fornecedor de peças', voltar=url_for('oficina.fornecedores')) %}{% endcall %}
+<form class="card" method="post">
+  <div class="card-head"><h2>{{ icon('fornecedor') }} Dados do fornecedor</h2></div>
+  <div class="card-corpo">
+    <div class="campos">
+      {{ campo('razao_social', 'Razão social', form, obrigatorio=true, largo=true) }}
+      {{ campo('cnpj', 'CNPJ', form, obrigatorio=true, mask='cnpj', placeholder='00.000.000/0000-00') }}
+      {{ campo('telefone', 'Telefone', form, obrigatorio=true, mask='tel', placeholder='(00) 0000-0000') }}
+      {{ campo('email', 'E-mail', form, tipo='email') }}
+      {{ campo('condicao_pagamento', 'Condição de pagamento', form, placeholder='Ex.: 30/60 dias') }}
+      {{ campo('endereco', 'Endereço', form, obrigatorio=true, largo=true) }}
+    </div>
+  </div>
+  <div class="form-acoes">
+    <button class="btn" type="submit">{{ icon('ok') }} Salvar fornecedor</button>
+    <a class="btn btn-ghost" href="{{ url_for('oficina.fornecedores') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}
