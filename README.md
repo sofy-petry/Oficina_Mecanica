@@ -19,9 +19,6 @@ peças, estoque, fornecedores e pagamentos.
 7. [Como o front-end foi feito](#-como-o-front-end-foi-feito)
 8. [Como executar o projeto](#-como-executar-o-projeto)
 9. [Estrutura de pastas](#-estrutura-de-pastas)
-10. [Problemas comuns](#-problemas-comuns)
-11. [Roteiro de demonstração](#-roteiro-de-demonstração)
-
 ---
 
 ## 🧭 Visão geral das etapas
